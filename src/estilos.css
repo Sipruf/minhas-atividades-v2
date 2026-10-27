@@ -1,0 +1,364 @@
+/* Estilos globais: variáveis, base, botões, campos, cartões e estrutura. Tema escuro. */
+
+:root {
+  color-scheme: dark;
+
+  /* Paleta da marca */
+  --laranja: #ff8200;
+  --cinza: #6f7072;
+  --cinza-claro: #ecedec;
+
+  /* Superfícies (do mais escuro ao mais claro) */
+  --fundo: #18191b;
+  --superficie: #242527;
+  --superficie-alta: #2e2f32;
+  --borda: var(--cinza);
+
+  /* Textos. Contraste sobre o fundo / sobre a superfície:
+     texto 15,8:1 / 13,8:1; secundário 7,6:1 / 6,6:1; laranja 7,1:1 / 6,2:1. */
+  --texto: var(--cinza-claro);
+  --texto-secundario: #a9aaac;
+  --sobre-laranja: var(--fundo);
+
+  /* Perigo: fundo do botão (texto claro 5,8:1) e cor de texto de erro (7,7:1). */
+  --perigo: #b3261e;
+  --perigo-texto: #ff8a80;
+
+  /* Medidas */
+  --toque: 44px;
+  --raio: 12px;
+  --raio-pequeno: 8px;
+  --largura-max: 1100px;
+
+  /* Tipografia */
+  --fonte: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --fonte-numeros: ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  background: var(--fundo);
+}
+
+body {
+  margin: 0;
+  font-family: var(--fonte);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--laranja);
+  outline-offset: 2px;
+}
+
+.secundario {
+  color: var(--texto-secundario);
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Botões ---- */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--toque);
+  min-width: var(--toque);
+  padding: 0 16px;
+  border: 2px solid transparent;
+  border-radius: var(--raio-pequeno);
+  background: var(--superficie-alta);
+  color: var(--texto);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botao:hover {
+  filter: brightness(1.15);
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: none;
+}
+
+/* Laranja com texto escuro: contraste 7,1:1. */
+.botao-primario {
+  background: var(--laranja);
+  color: var(--sobre-laranja);
+}
+
+.botao-primario:hover {
+  filter: brightness(1.08);
+}
+
+.botao-contorno {
+  background: transparent;
+  border-color: var(--borda);
+}
+
+.botao-perigo {
+  background: var(--perigo);
+  color: var(--texto);
+}
+
+.botao-icone {
+  width: var(--toque);
+  padding: 0;
+  font-size: 1.125rem;
+}
+
+/* ---- Campos ---- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo label {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.campo input,
+.campo textarea,
+.campo select {
+  min-height: var(--toque);
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--fundo);
+}
+
+.campo textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+.campo input::placeholder,
+.campo textarea::placeholder {
+  color: var(--texto-secundario);
+  opacity: 1;
+}
+
+.campo .dica {
+  font-size: 0.875rem;
+  color: var(--texto-secundario);
+}
+
+.erro-campo {
+  color: var(--perigo-texto);
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialogo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ---- Cartões, listas e selos ---- */
+
+.cartao {
+  background: var(--superficie);
+  border-radius: var(--raio);
+  padding: 16px;
+}
+
+.lista-limpa {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.selo {
+  display: inline-block;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--laranja);
+  color: var(--sobre-laranja);
+  font-family: var(--fonte);
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+/* ---- Acordeão (item clicável que abre o conteúdo logo abaixo) ---- */
+
+.acordeao {
+  border-radius: var(--raio-pequeno);
+  background: var(--superficie);
+}
+
+.acordeao-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: var(--toque);
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--raio-pequeno);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.acordeao-cabecalho:hover {
+  background: var(--superficie-alta);
+}
+
+.acordeao-seta {
+  color: var(--texto-secundario);
+  transition: transform 0.15s;
+}
+
+.acordeao-cabecalho[aria-expanded='true'] .acordeao-seta {
+  transform: rotate(90deg);
+}
+
+.acordeao-conteudo {
+  padding: 0 12px 12px;
+}
+
+/* ---- Estrutura ---- */
+
+.cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--fundo);
+  border-bottom: 1px solid var(--superficie-alta);
+}
+
+.cabecalho-interno {
+  max-width: var(--largura-max);
+  margin: 0 auto;
+  padding: 12px 16px 0;
+}
+
+.titulo-app {
+  font-size: 1.25rem;
+  margin: 0 0 8px;
+}
+
+.titulo-app .versao {
+  margin-left: 4px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--texto-secundario);
+}
+
+.abas {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.aba {
+  flex: 1;
+  min-height: var(--toque);
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--texto-secundario);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aba[aria-current='page'] {
+  color: var(--texto);
+  border-bottom-color: var(--laranja);
+}
+
+.conteudo {
+  max-width: var(--largura-max);
+  margin: 0 auto;
+  padding: 16px 16px 96px;
+}
+
+/* ---- Aviso na tela ---- */
+
+.aviso {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 8px 8px 8px 16px;
+  border: 1px solid var(--borda);
+  border-left: 6px solid var(--cinza);
+  border-radius: var(--raio);
+  background: var(--superficie-alta);
+  color: var(--texto);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+.aviso span {
+  flex: 1;
+}
+
+.aviso .botao-icone {
+  background: transparent;
+}
+
+.aviso-sucesso {
+  border-left-color: var(--laranja);
+}
+
+.aviso-erro {
+  border-left-color: var(--perigo-texto);
+}

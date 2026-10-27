@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+*.local
+.DS_Store
+npm-debug.log*
+
+# Ferramenta original, usada só como referência local (não vai para o repositório público)
+referencia/
