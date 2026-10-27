@@ -16,8 +16,12 @@ defineProps({
   mostrarDia: { type: Boolean, default: true }
 })
 
+function atividadeDe(registro) {
+  return estado.atividades.find((atividade) => atividade.id === registro.atividadeId)
+}
+
 function tituloDe(registro) {
-  return estado.atividades.find((a) => a.id === registro.atividadeId)?.titulo ?? '(sem atividade)'
+  return atividadeDe(registro)?.titulo ?? '(sem atividade)'
 }
 
 function quando(registro) {
@@ -82,6 +86,13 @@ function confirmarExclusao() {
         <span class="titulo">
           {{ tituloDe(registro) }}
           <span v-if="registro.fim === null" class="selo">em andamento</span>
+          <span
+            v-if="atividadeDe(registro)"
+            class="status-atividade"
+            :class="atividadeDe(registro).status"
+          >
+            {{ atividadeDe(registro).status === 'concluida' ? 'Concluída' : 'Pendente' }}
+          </span>
         </span>
       </div>
       <span class="duracao">{{ formatarDuracao(registro.ms) }}</span>
@@ -158,6 +169,26 @@ function confirmarExclusao() {
 .titulo {
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+.status-atividade {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.status-atividade.pendente {
+  background: var(--superficie-alta);
+  color: var(--texto-secundario);
+}
+
+.status-atividade.concluida {
+  background: var(--laranja);
+  color: var(--sobre-laranja);
 }
 
 .duracao {

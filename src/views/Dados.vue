@@ -2,17 +2,23 @@
 import { computed, ref, useId, watch } from 'vue'
 import ConfirmarDialog from '../components/ConfirmarDialog.vue'
 import ListaSessoes from '../components/ListaSessoes.vue'
-import Semana from './Semana.vue'
 import { dadosParaBackup, estado, mostrarAviso, substituirDados } from '../store/estado.js'
 import { listarRecuperacoes } from '../store/persistencia.js'
 import { interpretarBackup } from '../utils/backup.js'
-import { formatarDuracao, registrosDoIntervalo } from '../utils/calculos.js'
+import {
+  concluidasNoIntervalo,
+  formatarDuracao,
+  registrosDoIntervalo,
+  somaPorDia,
+  totalNoIntervalo
+} from '../utils/calculos.js'
 import { gerarRelatorio } from '../utils/relatorio.js'
 import {
   chaveDia,
   deslocarSemana,
   formatarDataHora,
   formatarDiaMes,
+  intervaloDoDia,
   intervaloDaSemana,
   nomeDiaSemana,
   rotuloSemana,
@@ -37,6 +43,9 @@ function mudarSemana(passo) {
 // ---- Registros da semana: guardados em cada dia (seg a sex), um por atividade ----
 
 const hoje = computed(() => chaveDia(estado.agora))
+const totalSemana = computed(() =>
+  totalNoIntervalo(estado.sessoes, intervaloDaSemana(semana.value), estado.agora)
+)
 
 const diasComRegistros = computed(() => {
   const registros = registrosDoIntervalo(
@@ -44,9 +53,16 @@ const diasComRegistros = computed(() => {
     intervaloDaSemana(semana.value),
     estado.agora
   )
+  const totaisPorDia = somaPorDia(estado.sessoes, semana.value.dias, estado.agora)
   return semana.value.dias.map((dia) => {
     const doDia = registros.filter((r) => r.dia === dia)
-    return { dia, registros: doDia, ms: doDia.reduce((total, r) => total + r.ms, 0) }
+    const concluidas = concluidasNoIntervalo(estado.atividades, intervaloDoDia(dia))
+    return {
+      dia,
+      registros: doDia,
+      ms: totaisPorDia[dia],
+      quantidadeConcluidas: concluidas.length
+    }
   })
 })
 
@@ -208,55 +224,56 @@ function baixarRecuperacao(copia) {
       </button>
     </div>
 
-    <div class="colunas">
-      <div class="coluna">
-        <Semana :semana="semana" />
+    <section class="semana" :aria-labelledby="`${id}-semana`">
+      <div class="cabecalho-semana">
+        <h2 :id="`${id}-semana`" class="titulo-secao">Semana</h2>
+        <p class="total-semana">
+          <span class="secundario">Total</span>
+          <strong>{{ formatarDuracao(totalSemana) }}</strong>
+        </p>
       </div>
-
-      <div class="coluna">
-        <!-- Registros -->
-        <section :aria-labelledby="`${id}-registros`">
-          <h2 :id="`${id}-registros`" class="titulo-secao">Registros da semana</h2>
-          <p class="secundario descricao-registros">
-            Ajuste ou apague o tempo de uma atividade num dia.
-          </p>
-          <ul class="lista-limpa lista-dias">
-            <li
-              v-for="item in diasComRegistros"
-              :key="item.dia"
-              class="acordeao"
-              :class="{ hoje: item.dia === hoje }"
-            >
-              <button
-                type="button"
-                class="acordeao-cabecalho"
-                :aria-expanded="diasAbertos.has(item.dia) ? 'true' : 'false'"
-                :aria-controls="diasAbertos.has(item.dia) ? `${id}-registros-${item.dia}` : undefined"
-                @click="alternarDia(item.dia)"
-              >
-                <span class="acordeao-seta" aria-hidden="true">▸</span>
-                <span class="rotulo-dia">
-                  {{ nomeDiaSemana(item.dia) }}
-                  <span class="secundario">{{ formatarDiaMes(item.dia) }}</span>
-                </span>
-                <span class="valor" :class="{ zero: !item.ms }">{{ formatarDuracao(item.ms) }}</span>
-              </button>
-              <div
-                v-if="diasAbertos.has(item.dia)"
-                :id="`${id}-registros-${item.dia}`"
-                class="acordeao-conteudo"
-              >
-                <ListaSessoes
-                  :registros="item.registros"
-                  :mostrar-dia="false"
-                  vazio="Nenhum registro neste dia."
-                />
-              </div>
-            </li>
-          </ul>
-        </section>
-      </div>
-    </div>
+      <p class="secundario descricao-registros">
+        Horas e registros por dia. Ajuste ou apague o tempo de uma atividade num dia.
+      </p>
+      <ul class="lista-limpa lista-dias">
+        <li
+          v-for="item in diasComRegistros"
+          :key="item.dia"
+          class="acordeao"
+          :class="{ hoje: item.dia === hoje }"
+        >
+          <button
+            type="button"
+            class="acordeao-cabecalho"
+            :aria-expanded="diasAbertos.has(item.dia) ? 'true' : 'false'"
+            :aria-controls="diasAbertos.has(item.dia) ? `${id}-registros-${item.dia}` : undefined"
+            @click="alternarDia(item.dia)"
+          >
+            <span class="acordeao-seta" aria-hidden="true">▸</span>
+            <span class="rotulo-dia">
+              {{ nomeDiaSemana(item.dia) }}
+              <span class="secundario">{{ formatarDiaMes(item.dia) }}</span>
+              <span v-if="item.quantidadeConcluidas" class="secundario qtd-concluidas">
+                · {{ item.quantidadeConcluidas }}
+                {{ item.quantidadeConcluidas === 1 ? 'concluída' : 'concluídas' }}
+              </span>
+            </span>
+            <span class="valor" :class="{ zero: !item.ms }">{{ formatarDuracao(item.ms) }}</span>
+          </button>
+          <div
+            v-if="diasAbertos.has(item.dia)"
+            :id="`${id}-registros-${item.dia}`"
+            class="acordeao-conteudo"
+          >
+            <ListaSessoes
+              :registros="item.registros"
+              :mostrar-dia="false"
+              vazio="Nenhum registro neste dia."
+            />
+          </div>
+        </li>
+      </ul>
+    </section>
 
     <!-- Backup e Relatório: centralizado, sempre no fim da página -->
     <section class="cartao backup" :aria-labelledby="`${id}-backup`">
@@ -359,23 +376,29 @@ function baixarRecuperacao(copia) {
   font-variant-numeric: tabular-nums;
 }
 
-.colunas {
-  display: grid;
-  gap: 24px;
-}
-
-@media (min-width: 900px) {
-  .colunas {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    align-items: start;
-  }
-}
-
-.coluna {
+.semana {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  min-width: 0;
+  gap: 12px;
+}
+
+.cabecalho-semana {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.total-semana {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.total-semana .secundario {
+  font-size: 0.8125rem;
 }
 
 .titulo-secao {
@@ -388,7 +411,7 @@ function baixarRecuperacao(copia) {
   font-size: 1rem;
 }
 
-/* Caixa centralizada, depois das colunas (no celular, fica no fim da tela). */
+/* Caixa centralizada depois do resumo da semana. */
 .backup {
   display: flex;
   flex-direction: column;
@@ -424,8 +447,7 @@ function baixarRecuperacao(copia) {
   margin-bottom: 12px;
 }
 
-/* Dia e registros usam as mesmas colunas: seta | título | tempo | ações (✎ 🗑).
-   Assim os títulos ficam sob o nome do dia e os tempos sob o total do dia. */
+/* Dia e registros usam as mesmas colunas: seta | título | tempo | ações (✎ 🗑). */
 .lista-dias {
   --colunas-registro: 1rem minmax(0, 1fr) auto calc(var(--toque) * 2 + 4px);
   display: flex;
@@ -436,6 +458,10 @@ function baixarRecuperacao(copia) {
 .lista-dias .acordeao-cabecalho {
   display: grid;
   grid-template-columns: var(--colunas-registro);
+}
+
+.qtd-concluidas {
+  font-size: 0.875rem;
 }
 
 .hoje .rotulo-dia {
